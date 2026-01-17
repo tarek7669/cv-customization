@@ -2,8 +2,13 @@
 CV Customization Streamlit Application
 """
 
+import os
 import streamlit as st
+from dotenv import load_dotenv
 from cv_customizer import customize_cv
+
+# Load environment variables
+load_dotenv()
 
 # Page configuration
 st.set_page_config(
@@ -54,29 +59,23 @@ st.markdown("""
 st.markdown('<h1 class="main-header">📄 CV Customizer</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Tailor your CV to match job descriptions using AI - honestly and effectively</p>', unsafe_allow_html=True)
 
-# Sidebar for API key
+# Sidebar with instructions
 with st.sidebar:
-    st.header("⚙️ Settings")
-    api_key = st.text_input(
-        "OpenAI API Key",
-        type="password",
-        help="Your OpenAI API key. This is required to use the service.",
-        placeholder="sk-..."
-    )
-    
-    st.divider()
+    st.header("ℹ️ How it works")
     
     st.markdown("""
-    ### How it works
     1. Paste your LaTeX CV
     2. Add the job description
     3. Click 'Customize CV'
     4. Download your tailored CV
     
+    ---
+    
     ### ⚠️ Important
     The AI will **never fabricate** skills or experience. It only:
     - Rewords existing content
-    - Highlights relevant experience
+    - Highlights relevant experience  
+    - Removes irrelevant items
     - Adjusts terminology
     - Optimizes for 2 pages
     """)
@@ -133,20 +132,19 @@ with col_btn2:
 # Processing and output
 if generate_button:
     # Validation
-    if not api_key:
-        st.error("⚠️ Please enter your OpenAI API key in the sidebar.")
-    elif not latex_cv.strip():
+    if not latex_cv.strip():
         st.error("⚠️ Please paste your LaTeX CV.")
     elif not job_description.strip():
         st.error("⚠️ Please paste the job description.")
+    elif not os.getenv("OPENAI_API_KEY"):
+        st.error("⚠️ OPENAI_API_KEY not found in .env file. Please add it.")
     else:
         # Process the CV
         with st.spinner("🔄 Customizing your CV... This may take a minute."):
             try:
                 customized_cv = customize_cv(
                     latex_cv=latex_cv,
-                    job_description=job_description,
-                    api_key=api_key
+                    job_description=job_description
                 )
                 
                 # Store in session state
