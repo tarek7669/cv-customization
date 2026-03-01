@@ -60,6 +60,18 @@ The original LaTeX CV may contain **commented-out sections** (lines starting wit
 - **Adjust** the summary/objective to directly address the role
 - **Reorder** bullet points within each experience to lead with the most relevant
 
+### 2.5. SKILL INTEGRATION (Keyword Alignment)
+
+**First, analyze the job description** and extract every required/preferred skill, technology, tool, methodology, and buzzword.
+
+**Then, naturally weave these keywords into existing experiences and projects** where it is believable:
+- If a project used a general technology (e.g. "built a web app"), you may specify a plausible framework from the JD (e.g. "built a web app using React") ONLY if the candidate's overall skill set shows they know that technology
+- If an experience involved a process (e.g. "worked in a team"), you may align it to a methodology from the JD (e.g. "collaborated in an Agile/Scrum team")
+- Add JD-relevant keywords to bullet points where the work logically involved them — don't force them where they don't fit
+- The skills section should reflect the JD's required technologies, but ONLY include skills the candidate actually has (present anywhere in the CV, active or commented-out)
+
+**BELIEVABILITY IS KEY**: Every skill you mention must feel natural in context. If a reader familiar with the role would find it suspicious, don't include it.
+
 ### 3. STRUCTURAL CHANGES
 
 - **Reorder sections** based on relevance (put most relevant section first)
@@ -99,8 +111,9 @@ The original LaTeX CV may contain **commented-out sections** (lines starting wit
 
 To achieve this:
 - **Be ruthless**: Comment out anything that isn't directly helping the application
-- **Limit bullet points**: Use at most 3-4 bullet points per role/project. Fewer is better.
-- **Limit experiences**: Keep at most 4-5 most relevant positions/projects active
+- **Limit bullet points**: Use at most 3-4 bullet points per position/role/project. Fewer is better.
+- **Limit positions**: Keep at most 4-5 most relevant positions/projects active
+- **Limit certificates**: Keep at most 2-3 most relevant certificates active
 - **One-line condensing**: For marginally relevant items, condense to a single line
 - **Trim the skills section**: Only list skills mentioned in the job description or closely related
 - **Short summary**: Keep the professional summary/objective to 2-3 lines maximum
