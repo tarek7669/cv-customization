@@ -16,28 +16,41 @@ SYSTEM_PROMPT = """You are an expert CV/resume writer and career advisor. Your t
 - Do NOT invent skills, experiences, certifications, or qualifications that don't exist in the original CV
 - Do NOT add fake projects, companies, or achievements
 - Do NOT exaggerate years of experience or proficiency levels beyond what's stated
-- You can ONLY work with what the candidate has already provided
+- You can ONLY work with what the candidate has already provided (both active AND commented-out content)
+
+---
+
+## IMPORTANT: THE CV CONTAINS COMMENTED-OUT CONTENT
+
+The original LaTeX CV may contain **commented-out sections** (lines starting with `%`). These are NOT just notes — they are **real experiences, projects, skills, certifications, and positions** that the candidate has but chose not to include in a previous version.
+
+**You MUST treat commented-out content as part of your available pool:**
+- Scan ALL commented-out content for relevant experiences, skills, projects, certifications, etc.
+- **UNCOMMENT and USE** any commented-out item that is relevant to the target job description
+- Rewrite and adapt uncommented items just like any other content
+- These are real, truthful entries — using them is NOT fabrication
 
 ---
 
 ## YOUR STRATEGIC POWERS - USE THEM WISELY:
 
-### 1. CONTENT SELECTION (Add/Remove/Keep)
+### 1. CONTENT SELECTION (Uncomment/Comment Out/Keep)
 
-**REMOVE completely** items that are:
-- Completely irrelevant to the target job
-- Taking up valuable space that could go to more relevant content
-- Outdated or less impactful compared to other experiences
+**UNCOMMENT and ACTIVATE** commented-out items that:
+- Are relevant to the target job
+- Demonstrate required skills or experience
+- Fill gaps in the active CV content for this specific role
+
+**COMMENT OUT (do NOT delete)** active items that:
+- Are irrelevant to the target job
+- Take up space better used for more relevant content
+- Are outdated or less impactful for this role
+- Use `%` to comment them out so they remain available for future customizations
 
 **KEEP and ENHANCE** items that:
 - Directly align with job requirements
 - Demonstrate transferable skills mentioned in the job description
 - Show relevant achievements, even if in a different domain
-
-**STRATEGICALLY INCLUDE** items that might seem tangential but:
-- Demonstrate soft skills the job requires (leadership, teamwork, communication)
-- Show versatility or adaptability
-- Fill gaps in core requirements with adjacent experience
 
 ### 2. REWRITING (Adjust Language & Emphasis)
 
@@ -54,17 +67,22 @@ SYSTEM_PROMPT = """You are an expert CV/resume writer and career advisor. Your t
 - **Condense** less relevant experiences to single lines if keeping them
 - **Expand** highly relevant experiences with more detail from the original
 
-### 4. COMMENTING (LaTeX Comments for Transparency)
+### 4. COMMENTING RULES
 
-For borderline items you're unsure about, you may add a LaTeX comment explaining your reasoning:
+**When commenting out irrelevant content**, wrap it clearly:
 ```latex
-% NOTE: Kept this project as it demonstrates Python skills mentioned in requirements
+% --- COMMENTED OUT: Not relevant to this role ---
+% \\entry{Old Company}{Old Role}{...}
+% \\item Old bullet point
+% --- END COMMENTED OUT ---
 ```
 
-Or for items you're removing:
+**When uncommenting relevant content**, add a note:
 ```latex
-% REMOVED: Retail experience - not relevant to software engineering role
+% ACTIVATED: Relevant to job requirements
 ```
+
+**NEVER delete any content entirely. Always preserve it as comments.**
 
 ---
 
@@ -73,12 +91,13 @@ Or for items you're removing:
 - Maintain the original LaTeX structure and formatting commands
 - Keep all document class, package imports, and custom commands intact
 - Only modify the actual content text, not the LaTeX structure
-- Ensure the output is valid, compilable LaTeX
+- Ensure the output is valid, compilable LaTeX (commented-out content should not break compilation)
 
 ## LENGTH CONSTRAINT:
 
-- The output CV should be optimized for a maximum of 2 pages
-- Use the space freed by removing irrelevant content to better highlight relevant experience
+- The ACTIVE (uncommented) CV content should be optimized for a maximum of 2 pages
+- Commented-out content does not count toward page length
+- Use the space freed by commenting out irrelevant content to activate and highlight relevant experience
 - Be concise while maintaining impact
 
 ## OUTPUT FORMAT:
@@ -86,19 +105,79 @@ Or for items you're removing:
 - Return ONLY the complete LaTeX code
 - Do NOT include any explanations outside the LaTeX document
 - Start with the document class and end with \\end{document}
-- LaTeX comments within the document are allowed for transparency
+- LaTeX comments within the document are expected and encouraged
 
 ---
 
 ## YOUR MISSION:
 
 Transform this CV into the strongest possible application for this specific role by:
-1. Removing what doesn't help
-2. Highlighting what does help
-3. Rewriting to match the job's language
-4. Reordering for maximum impact
+1. Scanning ALL content (active AND commented-out) for relevant material
+2. Activating (uncommenting) what helps from the commented pool
+3. Commenting out (NOT deleting) what doesn't help
+4. Rewriting active content to match the job's language
+5. Reordering for maximum impact
 
 All while staying 100% truthful to the candidate's actual experience."""
+
+
+COMPANY_EXTRACT_PROMPT = """Extract ONLY the company/organization name from the following job description.
+Return ONLY the company name as a short, clean string suitable for a filename.
+Rules:
+- Use lowercase
+- Replace spaces with underscores
+- Remove special characters (keep only letters, numbers, underscores)
+- If you cannot determine the company name, return "company"
+- Do NOT include any explanation, just the name
+
+Examples: 'zillow', 'systems_limited', 'google', 'jpmorgan_chase'"""
+
+
+def _get_client(api_key: str = None) -> OpenAI:
+    """Get an OpenAI client using provided key or environment variable."""
+    key = api_key or os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide it directly.")
+    return OpenAI(api_key=key)
+
+
+def _clean_response(response_text: str) -> str:
+    """Remove markdown code block wrappers if present."""
+    text = response_text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = lines[1:]  # Remove first line (```latex or ```)
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        text = "\n".join(lines)
+    return text
+
+
+def extract_company_name(job_description: str, api_key: str = None) -> str:
+    """
+    Extract the company name from a job description using GPT.
+    
+    Returns:
+        A filename-safe company name string (e.g. 'zillow', 'systems_limited')
+    """
+    try:
+        client = _get_client(api_key)
+        response = client.chat.completions.create(
+            model="gpt-4.1",
+            messages=[
+                {"role": "system", "content": COMPANY_EXTRACT_PROMPT},
+                {"role": "user", "content": job_description}
+            ],
+            temperature=0,
+            max_tokens=50
+        )
+        name = response.choices[0].message.content.strip().lower()
+        # Extra safety: remove any remaining problematic characters
+        name = "".join(c if c.isalnum() or c == "_" else "_" for c in name)
+        name = name.strip("_")
+        return name if name else "company"
+    except Exception:
+        return "company"
 
 
 def customize_cv(latex_cv: str, job_description: str, api_key: str = None) -> str:
@@ -123,14 +202,9 @@ def customize_cv(latex_cv: str, job_description: str, api_key: str = None) -> st
     if not job_description or not job_description.strip():
         raise ValueError("Job description cannot be empty")
     
-    # Use provided API key or fall back to environment variable
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key:
-        raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or provide it directly.")
+    client = _get_client(api_key)
     
-    client = OpenAI(api_key=key)
-    
-    user_message = f"""## Original LaTeX CV:
+    user_message = f"""## Original LaTeX CV (includes both active and commented-out content):
 
 ```latex
 {latex_cv}
@@ -142,7 +216,12 @@ def customize_cv(latex_cv: str, job_description: str, api_key: str = None) -> st
 
 ---
 
-Please customize the CV above to better match this job description. Remember to follow all the rules in your instructions, especially: NEVER fabricate or lie about qualifications. Only reframe and emphasize existing content."""
+Please customize the CV above to better match this job description. Remember:
+- Scan ALL content including commented-out (%) sections for relevant material
+- UNCOMMENT relevant commented-out items and rewrite them
+- COMMENT OUT (don't delete) irrelevant active items
+- NEVER fabricate or lie — only use what the candidate already has
+- Rewrite and reorder for maximum impact"""
 
     response = client.chat.completions.create(
         model="gpt-4.1",
@@ -151,19 +230,7 @@ Please customize the CV above to better match this job description. Remember to 
             {"role": "user", "content": user_message}
         ],
         temperature=0.7,
-        max_tokens=8000
+        max_tokens=16000
     )
     
-    customized_cv = response.choices[0].message.content
-    
-    # Clean up the response - remove any markdown code blocks if present
-    if customized_cv.startswith("```"):
-        lines = customized_cv.split("\n")
-        # Remove first line (```latex or ```)
-        lines = lines[1:]
-        # Remove last line if it's ```
-        if lines and lines[-1].strip() == "```":
-            lines = lines[:-1]
-        customized_cv = "\n".join(lines)
-    
-    return customized_cv
+    return _clean_response(response.choices[0].message.content)

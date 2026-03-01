@@ -5,7 +5,7 @@ CV Customization Streamlit Application
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from cv_customizer import customize_cv
+from cv_customizer import customize_cv, extract_company_name
 
 # Load environment variables
 load_dotenv()
@@ -71,13 +71,16 @@ with st.sidebar:
     
     ---
     
-    ### ⚠️ Important
-    The AI will **never fabricate** skills or experience. It only:
-    - Rewords existing content
-    - Highlights relevant experience  
-    - Removes irrelevant items
-    - Adjusts terminology
+    ### 💡 What the AI does
+    - **Uncomments** relevant hidden content
+    - **Comments out** irrelevant items (never deletes)
+    - **Rewords** to match job terminology
+    - **Reorders** for maximum impact
     - Optimizes for 2 pages
+    
+    ### ⚠️ Honesty guarantee
+    The AI will **never fabricate** skills or experience.
+    It only works with what's already in your CV.
     """)
 
 # Main content - two columns for input
@@ -146,10 +149,12 @@ if generate_button:
                     latex_cv=latex_cv,
                     job_description=job_description
                 )
+                company_name = extract_company_name(job_description)
                 
                 # Store in session state
                 st.session_state['customized_cv'] = customized_cv
-                st.success("✅ CV customized successfully!")
+                st.session_state['company_name'] = company_name
+                st.success(f"✅ CV customized for **{company_name.replace('_', ' ').title()}**!")
                 
             except ValueError as e:
                 st.error(f"⚠️ Validation error: {str(e)}")
@@ -164,10 +169,11 @@ if 'customized_cv' in st.session_state:
     # Download button
     col_dl1, col_dl2, col_dl3 = st.columns([1, 1, 1])
     with col_dl2:
+        company = st.session_state.get('company_name', 'company')
         st.download_button(
-            label="⬇️ Download .tex File",
+            label=f"⬇️ Download {company}.tex",
             data=st.session_state['customized_cv'],
-            file_name="customized_cv.tex",
+            file_name=f"{company}.tex",
             mime="application/x-tex",
             use_container_width=True
         )
@@ -178,6 +184,7 @@ if 'customized_cv' in st.session_state:
     # Option to clear
     if st.button("🗑️ Clear Results"):
         del st.session_state['customized_cv']
+        st.session_state.pop('company_name', None)
         st.rerun()
 
 # Footer
