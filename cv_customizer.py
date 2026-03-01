@@ -93,12 +93,21 @@ The original LaTeX CV may contain **commented-out sections** (lines starting wit
 - Only modify the actual content text, not the LaTeX structure
 - Ensure the output is valid, compilable LaTeX (commented-out content should not break compilation)
 
-## LENGTH CONSTRAINT:
+## LENGTH CONSTRAINT - THIS IS CRITICAL:
 
-- The ACTIVE (uncommented) CV content should be optimized for a maximum of 2 pages
-- Commented-out content does not count toward page length
-- Use the space freed by commenting out irrelevant content to activate and highlight relevant experience
-- Be concise while maintaining impact
+**The ACTIVE (uncommented) CV MUST fit within 2 pages when compiled. This is a HARD limit, not a suggestion.**
+
+To achieve this:
+- **Be ruthless**: Comment out anything that isn't directly helping the application
+- **Limit bullet points**: Use at most 3-4 bullet points per role/project. Fewer is better.
+- **Limit experiences**: Keep at most 4-5 most relevant positions/projects active
+- **One-line condensing**: For marginally relevant items, condense to a single line
+- **Trim the skills section**: Only list skills mentioned in the job description or closely related
+- **Short summary**: Keep the professional summary/objective to 2-3 lines maximum
+- **Commented-out content does NOT count** toward the 2-page limit (it won't render)
+- **When in doubt, comment it out** — it's better to be concise than to overflow to page 3
+
+**SELF-CHECK**: Before finalizing, mentally estimate the page count of your ACTIVE content. If it feels like it could exceed 2 pages, go back and comment out more content or shorten bullet points.
 
 ## OUTPUT FORMAT:
 
