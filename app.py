@@ -139,8 +139,8 @@ if generate_button:
         st.error("⚠️ Please paste your LaTeX CV.")
     elif not job_description.strip():
         st.error("⚠️ Please paste the job description.")
-    elif not os.getenv("OPENAI_API_KEY"):
-        st.error("⚠️ OPENAI_API_KEY not found in .env file. Please add it.")
+    # elif not os.getenv("OPENAI_API_KEY"):
+    #     st.error("⚠️ OPENAI_API_KEY not found in .env file. Please add it.")
     else:
         # Process the CV
         with st.spinner("🔄 Customizing your CV... This may take a minute."):
